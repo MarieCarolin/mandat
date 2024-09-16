@@ -1,0 +1,72 @@
+<alto xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.loc.gov/standards/alto/ns-v4#" xsi:schemaLocation="http://www.loc.gov/standards/alto/ns-v4# http://www.loc.gov/standards/alto/v4/alto-4-3.xsd">
+    <Description>
+        <MeasurementUnit>pixel</MeasurementUnit>
+        <sourceImageInformation>
+            <fileName>AEV_3090_1870_St-Maurice_Evionnaz_075.jpg</fileName>
+        </sourceImageInformation>
+        <Processing ID="OCR_1">
+            <processingCategory>contentGeneration</processingCategory>
+            <processingStepDescription>Text line recognition</processingStepDescription>
+            <processingStepSettings>text_direction: horizontal-tb; models: KrakenTranscription.mlmodel; pad: 16; bidi_reordering: True; </processingStepSettings>
+            <processingSoftware>
+                <softwareName>kraken</softwareName>
+                <softwareVersion>4.2.0</softwareVersion>
+            </processingSoftware>
+        </Processing>
+    </Description>
+    <Tags>
+        <OtherTag ID="TYPE_1" LABEL="default"/>
+        <OtherTag ID="TYPE_2" LABEL="Col"/>
+    </Tags>
+    <Layout>
+        <Page WIDTH="3768" HEIGHT="5682" PHYSICAL_IMG_NR="0" ID="page_0">
+            <PrintSpace HPOS="0" VPOS="0" WIDTH="3768" HEIGHT="5682">
+                <TextBlock ID="block_0" HPOS="101" VPOS="3013" WIDTH="650" HEIGHT="569" TAGREFS="TYPE_2">
+                    <Shape>
+                        <Polygon POINTS="101 3013 751 3013 751 3582 101 3582 101 3013"/>
+                    </Shape>
+                    <TextLine ID="line_0" HPOS="218" VPOS="3257" WIDTH="421" HEIGHT="123" BASELINE="222 3333 639 3319" TAGREFS="TYPE_1">
+                        <Shape>
+                            <Polygon POINTS="222 3333 222 3380 639 3371 639 3319 625 3257 218 3267 222 3333"/>
+                        </Shape>
+                        <String ID="segment_0" CONTENT="Aucune" HPOS="222" VPOS="3260" WIDTH="277" HEIGHT="118" WC="0.9911">
+                            <Shape>
+                                <Polygon POINTS="494 3259 445 3260 364 3262 324 3263 324 3263 324 3263 324 3263 324 3263 324 3263 324 3263 221 3332 221 3332 221 3332 221 3332 221 3332 221 3332 221 3332 221 3332 221 3332 221 3332 221 3333 221 3333 221 3333 221 3333 221 3333 221 3333 221 3333 221 3333 221 3333 221 3333 221 3333 221 3333 221 3333 328 3378 328 3378 328 3378 328 3378 329 3378 499 3374 499 3374 499 3374 499 3374 499 3374 499 3374 499 3374 499 3374 499 3374 499 3374 499 3374 499 3374 499 3374 499 3374 499 3374 499 3374 499 3373 495 3259 495 3259 495 3259 495 3259 495 3259 495 3259 495 3259 495 3259 495 3259 495 3259 495 3259 495 3259 495 3259 495 3259 495 3259 495 3259 494 3259"/>
+                            </Shape>
+                            <Glyph ID="char_0" CONTENT="A" HPOS="222" VPOS="3333" WIDTH="0" HEIGHT="0" GC="1.0">
+                                <Shape>
+                                    <Polygon POINTS="222 3333 222 3333 222 3333 222 3333"/>
+                                </Shape>
+                            </Glyph>
+                            <Glyph ID="char_1" CONTENT="u" HPOS="325" VPOS="3264" WIDTH="4" HEIGHT="114" GC="0.9998">
+                                <Shape>
+                                    <Polygon POINTS="325 3264 329 3378 329 3378 325 3264"/>
+                                </Shape>
+                            </Glyph>
+                            <Glyph ID="char_2" CONTENT="c" HPOS="365" VPOS="3263" WIDTH="4" HEIGHT="114" GC="0.9999">
+                                <Shape>
+                                    <Polygon POINTS="365 3263 369 3377 369 3377 365 3263"/>
+                                </Shape>
+                            </Glyph>
+                            <Glyph ID="char_3" CONTENT="u" HPOS="398" VPOS="3263" WIDTH="4" HEIGHT="113" GC="1.0">
+                                <Shape>
+                                    <Polygon POINTS="398 3263 402 3376 402 3376 398 3263"/>
+                                </Shape>
+                            </Glyph>
+                            <Glyph ID="char_4" CONTENT="n" HPOS="446" VPOS="3261" WIDTH="4" HEIGHT="114" GC="0.9471">
+                                <Shape>
+                                    <Polygon POINTS="446 3261 450 3375 450 3375 446 3261"/>
+                                </Shape>
+                            </Glyph>
+                            <Glyph ID="char_5" CONTENT="e" HPOS="495" VPOS="3260" WIDTH="4" HEIGHT="114" GC="1.0">
+                                <Shape>
+                                    <Polygon POINTS="495 3260 499 3374 499 3374 495 3260"/>
+                                </Shape>
+                            </Glyph>
+                        </String>
+                    </TextLine>
+</TextBlock>
+            </PrintSpace>
+        </Page>
+    </Layout>
+</alto>
