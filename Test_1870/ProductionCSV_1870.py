@@ -2,15 +2,16 @@ import os
 import re
 import xml.etree.ElementTree as ET
 import numpy as np
-from PIL import Image, ImageDraw
 from sklearn.cluster import KMeans
+#Ce code a pour objectif de gérer les données des fichiers XML obtenu par OCR pour 1870
+#Ce code organise les données des prénoms et des noms dans un dictionnaire, recrée les noms composés et recrée le lien entre prénom et nom de famille
+#Ce code gère les images en format protrait qui ont moins données et qui ne peuvent pas être gérées de la même manière que les autres 
+#Ce code génère, pour l'instant, des fichiers txt dans lesquels sont organisés les données. 
+#Contrairement au scripts de 1829, 1837, 1846 et 1850, ce code ne nécéssite pas d'utiliser les numérisations, il prend les infos directement dans les fichiers xml
+
 
 # Chemins vers les dossiers contenant les fichiers XML et JPG.
 transcription_folder = r'Test_1870/Transcriptions'
-sets_folder = r'Test_1870/Sets'
-
-# Chemin du dossier pour les images modifiées en cas de 4 clusters
-output_folder_4_clusters = r'Test_1870/Modified_Images_4_clusters'
 
 # Dossier où les fichiers .txt seront enregistrés
 txt_output_folder = r'Test_1870/txt_Xml'
@@ -22,6 +23,7 @@ if not os.path.exists(txt_output_folder):
 # lsts
 output_list = []  # output final
 Pages_sans_text = [
+    
 ]  # lst de pages sans texte
 
 # Liste pour stocker les fichiers XML avec des erreurs
@@ -29,9 +31,6 @@ fichiers_avec_erreurs = []
 
 # Liste des fichiers qui ont échoué avec 6 clusters mais fonctionnent avec 4
 fichiers_6_to_4 = []
-
-# Liste des fichiers en portrait (hauteur > largeur)
-fichiers_portrait = []
 
 # Dictionnaires pour stocker les résultats selon le nombre de clusters
 final_dict_6_clusters = {}  # Fichiers traités avec 6 clusters
@@ -48,13 +47,8 @@ exclusion_terms = [
 ]
 
 # Fonction pour appliquer le clustering et organiser les données dans un dictionnaire
-def apply_clustering_and_create_dict(xml_file_name, xml_file_path, img_file_path, num_clusters, draw_clusters=False, filter_hpos=None):
+def apply_clustering_and_create_dict(xml_file_name, xml_file_path, num_clusters, filter_hpos=None):
     try:
-        # Calculer la valeur de la moitié de l'image pour détection des colonnes
-        img = Image.open(img_file_path)
-        image_width = img.width
-        moitie_image = image_width / 2
-
         # Lire et analyser le fichier XML
         tree = ET.parse(xml_file_path)
         root = tree.getroot()
@@ -62,76 +56,85 @@ def apply_clustering_and_create_dict(xml_file_name, xml_file_path, img_file_path
         # Extraire les éléments XML avec la balise <alto:String>
         namespace = {'alto': 'http://www.loc.gov/standards/alto/ns-v4#'}
         string_elements = root.findall('.//alto:String', namespace)
+        page_element = root.find('.//alto:Page', namespace)
 
         # Extraire les valeurs HPOS et VPOS, les convertir en entiers
         hpos_values = np.array([int(string_element.get('HPOS', 0)) for string_element in string_elements])
         vpos_values = np.array([int(string_element.get('VPOS', 0)) for string_element in string_elements])
+        image_width = int(page_element.get('WIDTH', 0))
+        image_height = int(page_element.get('HEIGHT', 0))
+        moitie_image = image_width / 2  # Moitié verticale de la page
 
-        # Appliquer le filtre pour ne prendre en compte que les données avant la moitié de l'image (si demandé)
-        if filter_hpos:
-            indices = np.where(hpos_values < moitie_image)[0]
-            hpos_values = hpos_values[indices]
-            vpos_values = vpos_values[indices]
-            string_elements = [string_elements[i] for i in indices]
+        #géreer les images en portraits
+        if image_width < image_height:
+            process_portrait_files(xml_file_name, xml_file_path)
 
-        # Reshape pour clustering
-        hpos_values = hpos_values.reshape(-1, 1)
-        vpos_values = vpos_values.reshape(-1, 1)
+        else : 
+            # Appliquer le filtre pour ne prendre en compte que les données avant la moitié de l'image (si demandé)
+            if filter_hpos:
+                indices = np.where(hpos_values < moitie_image)[0]
+                hpos_values = hpos_values[indices]
+                vpos_values = vpos_values[indices]
+                string_elements = [string_elements[i] for i in indices]
 
-        # Appliquer KMeans pour séparer les valeurs HPOS et VPOS en `num_clusters` clusters
-        kmeans_hpos = KMeans(n_clusters=num_clusters, random_state=42)
-        clusters_hpos = kmeans_hpos.fit_predict(hpos_values)
+            # Reshape pour clustering
+            hpos_values = hpos_values.reshape(-1, 1)
+            vpos_values = vpos_values.reshape(-1, 1)
 
-        kmeans_vpos = KMeans(n_clusters=num_clusters, random_state=42)
-        clusters_vpos = kmeans_vpos.fit_predict(vpos_values)
+            # Appliquer KMeans pour séparer les valeurs HPOS et VPOS en `num_clusters` clusters
+            kmeans_hpos = KMeans(n_clusters=num_clusters, random_state=42)
+            clusters_hpos = kmeans_hpos.fit_predict(hpos_values)
 
-        # Calcul de la médiane des valeurs HPOS pour chaque Cluster
-        median_values = []
-        for i in range(num_clusters):
-            cluster_points_hpos = hpos_values[clusters_hpos == i]
-            cluster_points_vpos = vpos_values[clusters_vpos == i]
-            median_hpos_value = int(np.median(cluster_points_hpos))
-            median_vpos_value = int(np.median(cluster_points_vpos))
-            median_values.append((i, median_hpos_value, median_vpos_value))
+            kmeans_vpos = KMeans(n_clusters=num_clusters, random_state=42)
+            clusters_vpos = kmeans_vpos.fit_predict(vpos_values)
 
-        # Trier les clusters par leur position HPOS
-        sorted_clusters = sorted(median_values, key=lambda x: x[1])
+            # Calcul de la médiane des valeurs HPOS pour chaque Cluster
+            median_values = []
+            for i in range(num_clusters):
+                cluster_points_hpos = hpos_values[clusters_hpos == i]
+                cluster_points_vpos = vpos_values[clusters_vpos == i]
+                median_hpos_value = int(np.median(cluster_points_hpos))
+                median_vpos_value = int(np.median(cluster_points_vpos))
+                median_values.append((i, median_hpos_value, median_vpos_value))
 
-        # Organiser le contenu en clusters
-        cluster_content = {i: [] for i in range(num_clusters)}
-        for i, string_element in enumerate(string_elements):
-            content = string_element.get('CONTENT')
-            hpos = int(string_element.get('HPOS', 0))
-            vpos = int(string_element.get('VPOS', 0))
-            assigned_cluster_hpos = clusters_hpos[i]
-            cluster_content[assigned_cluster_hpos].append((hpos, vpos, content))
+            # Trier les clusters par leur position HPOS
+            sorted_clusters = sorted(median_values, key=lambda x: x[1])
 
-        # Trier les éléments dans chaque cluster par HPOS puis VPOS
-        for i in range(num_clusters):
-            cluster_content[i] = sorted(cluster_content[i], key=lambda x: (x[0], x[1]))
+            # Organiser le contenu en clusters
+            cluster_content = {i: [] for i in range(num_clusters)}
+            for i, string_element in enumerate(string_elements):
+                content = string_element.get('CONTENT')
+                hpos = int(string_element.get('HPOS', 0))
+                vpos = int(string_element.get('VPOS', 0))
+                assigned_cluster_hpos = clusters_hpos[i]
+                cluster_content[assigned_cluster_hpos].append((hpos, vpos, content))
 
-        # Création du dictionnaire pour stocker les données XML par catégories
-        current_xml_dict = {xml_file_name: {'Last Name': [], 'First Name': [], 'Other': []}}
-        cluster_names = {1: 'Last Name', 2: 'First Name', 3: 'Other'}  # Organisation du dictionnaire
+            # Trier les éléments dans chaque cluster par HPOS puis VPOS
+            for i in range(num_clusters):
+                cluster_content[i] = sorted(cluster_content[i], key=lambda x: (x[0], x[1]))
 
-        # Ajoute chaque élément du cluster dans le dictionnaire
-        for i, cluster_data in enumerate(sorted_clusters, start=1):
-            cluster_index, _, _ = cluster_data
-            cluster_content_data = [(hpos, vpos, content) for hpos, vpos, content in cluster_content[cluster_index]]
-            cluster_content_data.sort(key=lambda x: x[1])  # Tri par VPOS
-            
-            # Nettoyage des données, puis rangement des données dans le dictionnaire
-            for hpos, vpos, content in cluster_content_data:
-                if hpos > moitie_image or content in [" ", "/", "-"] or re.match(r'.*\d+.*', content) or re.match(r'[A-Z]{3,}', content) or content in exclusion_terms:
-                    pass  # Filtrage du contenu non pertinent
+            # Création du dictionnaire pour stocker les données XML par catégories
+            current_xml_dict = {xml_file_name: {'Last Name': [], 'First Name': [], 'Other': []}}
+            cluster_names = {1: 'Last Name', 2: 'First Name', 3: 'Other'}  # Organisation du dictionnaire
 
-                else:
-                    if i != 4:
-                        current_xml_dict[xml_file_name][cluster_names[i]].append((content, vpos, hpos))
+            # Ajoute chaque élément du cluster dans le dictionnaire
+            for i, cluster_data in enumerate(sorted_clusters, start=1):
+                cluster_index, _, _ = cluster_data
+                cluster_content_data = [(hpos, vpos, content) for hpos, vpos, content in cluster_content[cluster_index]]
+                cluster_content_data.sort(key=lambda x: x[1])  # Tri par VPOS
+                
+                # Nettoyage des données, puis rangement des données dans le dictionnaire
+                for hpos, vpos, content in cluster_content_data:
+                    if hpos > moitie_image or content in [" ", "/", "-"] or re.match(r'.*\d+.*', content) or re.match(r'[A-Z]{3,}', content) or content in exclusion_terms:
+                        pass  # Filtrage du contenu non pertinent
+
                     else:
-                        current_xml_dict[xml_file_name][cluster_names[3]].append((content, vpos, hpos))
+                        if i != 4:
+                            current_xml_dict[xml_file_name][cluster_names[i]].append((content, vpos, hpos))
+                        else:
+                            current_xml_dict[xml_file_name][cluster_names[3]].append((content, vpos, hpos))
 
-        return current_xml_dict
+            return current_xml_dict
 
     except Exception as e:
         raise e  # Relancer l'exception pour la capturer à un autre niveau
@@ -298,21 +301,13 @@ def generate_portrait_txt_output(xml_file_name, extracted_content):
 # Partie principale : appel de la fonction pour chaque fichier XML
 for subfolder_name in os.listdir(transcription_folder):
     xml_folder = os.path.join(transcription_folder, subfolder_name)
-    img_folder = os.path.join(sets_folder, subfolder_name)
 
     for xml_file_name in os.listdir(xml_folder):
         if xml_file_name.endswith('.xml') and xml_file_name not in Pages_sans_text:
             try:
                 xml_file_path = os.path.join(xml_folder, xml_file_name)
-                img_file_path = os.path.join(img_folder, xml_file_name.replace('.xml', '.jpg'))
 
-                img = Image.open(img_file_path)
-                image_width, image_height = img.size
-                if image_width < image_height:
-                    process_portrait_files(xml_file_name, xml_file_path)
-                    continue
-
-                current_dict = apply_clustering_and_create_dict(xml_file_name, xml_file_path, img_file_path, num_clusters=6)
+                current_dict = apply_clustering_and_create_dict(xml_file_name, xml_file_path, num_clusters=6)
                 final_dict_6_clusters.update(current_dict)
 
                 # Ajout de la gestion des prénoms composés
@@ -323,7 +318,7 @@ for subfolder_name in os.listdir(transcription_folder):
 
             except Exception as e:
                 try:
-                    current_dict = apply_clustering_and_create_dict(xml_file_name, xml_file_path, img_file_path, num_clusters=4, draw_clusters=True, filter_hpos=True)
+                    current_dict = apply_clustering_and_create_dict(xml_file_name, xml_file_path, num_clusters=4, filter_hpos=True)
                     final_dict_4_clusters.update(current_dict)
                     fichiers_6_to_4.append(xml_file_name)
 
