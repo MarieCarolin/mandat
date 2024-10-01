@@ -38,10 +38,10 @@ final_dict_4_clusters = {}  # Fichiers traités avec 4 clusters après échec av
 
 # Liste des mots à exclure (affiliation) ajouter des exclusions en allemand pour la précision
 exclusion_terms = [
-    "fils", "père", "mère", "fille", "grand-père", "grand-mère",  # Français
-    "Sohn", "Tochter", "Vater", "Mutter", "Grossvater", "Grossmutter",  # Allemand (standard)
+    "fils", "père", "mère", "fille", "grand-père", "grand-mère", "femme"  # Français
+    "Sohn", "Tochter", "Vater", "Mutter", "Grossvater", "Grossmutter", "Frau"  # Allemand (standard)
     "grandpere", "grandmere", "Grandpere", "Grandmere", "Grand-Pere", "Grand-Mere", "Grandpère", "Grandmère",  # Variantes sans accent
-    "soeur", "frère", "seour", "bel", "Père", "Mère", "Fils", "Fille",  # Variantes françaises
+    "soeur", "frère", "seour", "bel", "Père", "Mère", "Fils", "Fille", "Femme",  # Variantes françaises
     "Soeur", "Frère", "Beau-Père", "Beau-Mère", "Belle-Mère", "Beau-Frère", "Belle-Soeur",  # Français avec majuscules
     "Bruder", "Schwester", "Schwager", "Schwägerin", "Schwiegervater", "Schwiegermutter"  # Allemand (frère, soeur, beaux-parents)
 ]
