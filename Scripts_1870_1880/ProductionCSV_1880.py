@@ -12,7 +12,7 @@ import csv
 #l'output final de ce code est un fichier csv
 
 # Chemins vers les dossiers contenant les fichiers XML et JPG.
-transcription_folder = r'Scripts_1870_1880/Test_1870'
+transcription_folder = r'Scripts_1870_1880/Test_1880'
 
 # lsts
 output_list = []  # output final
@@ -260,7 +260,7 @@ def generate_csv_output(output):
     output_forCSV.sort(key=lambda x: (x[0], x[3]))
     header = ['File', 'Last Name', 'First', 'YPos', 'XPos']
 
-    with open("Output1870.csv", "w", newline='',encoding='utf-8') as csv_file:
+    with open("Output1880.csv", "w", newline='',encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(header)
         csv_writer.writerows(output_forCSV)
