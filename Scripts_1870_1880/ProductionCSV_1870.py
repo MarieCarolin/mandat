@@ -12,8 +12,7 @@ import csv
 #l'output final de ce code est un fichier csv
 
 # Chemins vers les dossiers contenant les fichiers XML et JPG.
-transcription_folder = r'Scripts_1870_1880/Test_1870'
-
+transcription_folder = r'Scripts_1870_1880/Transcriptions/1870'
 # lsts
 output_list = []  # output final
 Pages_sans_text = [
@@ -203,7 +202,6 @@ def handle_composed_first_names(current_xml_dict, xml_file_name):
 
 # Fonction pour lier les prénoms aux noms de famille, en filtrant les termes d'affiliation
 def link_first_name_last_name(current_xml_dict, xml_file_name, output_list):
-    print('linked first name ')
     FirstName_str = current_xml_dict.get(xml_file_name).get("First Name")
     LastName_str = current_xml_dict.get(xml_file_name).get("Last Name")
     
@@ -386,3 +384,7 @@ for subfolder_name in os.listdir(transcription_folder):
 
                 except Exception as e:
                     fichiers_avec_erreurs.append(xml_file_name)
+
+with open('1870OutputFilesError.txt', "w", newline='',encoding='utf-8') as csv_file:
+    for entry in fichiers_avec_erreurs:
+        csv_file.write(f"{entry}\n")

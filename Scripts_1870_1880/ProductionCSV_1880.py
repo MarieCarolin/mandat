@@ -12,8 +12,7 @@ import csv
 #l'output final de ce code est un fichier csv
 
 # Chemins vers les dossiers contenant les fichiers XML et JPG.
-transcription_folder = r'Scripts_1870_1880/Test_1880'
-
+transcription_folder = r'Scripts_1870_1880/Transcriptions/1880'
 # lsts
 output_list = []  # output final
 Pages_sans_text = [
@@ -38,7 +37,7 @@ exclusion_terms = [
     "soeur", "frère", "seour", "bel", "belle", "petite", "petit", "Père", "Mère", "Fils", "Fille", "Femme", "Fem", "Epouse", "Epoux", "Mari", # Variantes françaises
     "Soeur", "Frère", "Beau-Père", "Beau-Mère", "Belle-Mère", "Beau-Frère", "Belle-Soeur",  # Français avec majuscules
     "Bruder", "Schwester", "Schwager", "Schwägerin", "Schwiegervater", "Schwiegermutter",  # Allemand (frère, soeur, beaux-parents)
-    "domestique", "Domestique", "Etudiant", "étudiant", "Etudiante", "étudiante","instituteur", "Instituteur", "institutrice", "Institutrice"
+    "domestique", "Domestique", "Etudiant", "étudiant", "Etudiante", "étudiante","instituteur", "Instituteur", "institutrice", "Institutrice", "ouvrier"
 ]
 # Fonction pour contrôler si c'est un portrait ou non 
 
@@ -202,8 +201,7 @@ def handle_composed_first_names(current_xml_dict, xml_file_name):
     current_xml_dict[xml_file_name]["First Name"] = Premiere_partie_triee
 
 # Fonction pour lier les prénoms aux noms de famille, en filtrant les termes d'affiliation
-def link_first_name_last_name(current_xml_dict, xml_file_name, output_list):
-    print('linked first name ')
+def link_first_name_last_name(current_xml_dict, xml_file_name, output_list,outputcsvName):
     FirstName_str = current_xml_dict.get(xml_file_name).get("First Name")
     LastName_str = current_xml_dict.get(xml_file_name).get("Last Name")
     
@@ -241,7 +239,7 @@ def link_first_name_last_name(current_xml_dict, xml_file_name, output_list):
     # Génération des fichiers .txt avec les résultats
     # generate_txt_output(xml_file_name, FirstName_LastName)
     # Génération d'un ficiher csv
-    generate_csv_output(output_list)
+    generate_csv_output(output_list,outputcsvName )
 
 # Fonction pour générer des fichiers .txt
 '''def generate_txt_output(xml_file_name, FirstName_LastName):
@@ -251,7 +249,7 @@ def link_first_name_last_name(current_xml_dict, xml_file_name, output_list):
             f.write(f"XML File: {entry[0]}\nNom de famille: {entry[1]}\nPrénom: {entry[2]}\nVPOS (y): {entry[3]}\nHPOS (x): {entry[4]}\n\n")'''
 
 # Fonction pour générer le csv à partir de "output_list"
-def generate_csv_output(output):
+def generate_csv_output(output, outputcsvName):
     output_forCSV =[]
     for xml in output:
         for line in xml:
@@ -259,11 +257,6 @@ def generate_csv_output(output):
 
     output_forCSV.sort(key=lambda x: (x[0], x[3]))
     header = ['File', 'Last Name', 'First', 'YPos', 'XPos']
-
-    with open("Output1880.csv", "w", newline='',encoding='utf-8') as csv_file:
-        csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(header)
-        csv_writer.writerows(output_forCSV)
 
 # Fonction pour traiter les fichiers en portrait et extraire le contenu avant la moitié verticale
 def process_portrait_files(xml_file_name, xml_file_path,num_clusters):
@@ -354,11 +347,17 @@ def process_portrait_files(xml_file_name, xml_file_path,num_clusters):
         except Exception as e:
             print(f"Erreur lors du traitement du fichier en portrait {xml_file_name}: {e}")
 
+def process_recapitulation_files(xml_file_name):
+    if re.match(r'AEV_3090_1880_Recapitulation_\d{3}', xml_file_name):
+        Pages_sans_text.append(xml_file_name)
+
+
 # Partie principale : appel de la fonction pour chaque fichier XML
 for subfolder_name in os.listdir(transcription_folder):
     xml_folder = os.path.join(transcription_folder, subfolder_name)
 
     for xml_file_name in os.listdir(xml_folder):
+        process_recapitulation_files(xml_file_name)
         if xml_file_name.endswith('.xml') and xml_file_name not in Pages_sans_text:
             try:
                 xml_file_path = os.path.join(xml_folder, xml_file_name)
@@ -370,7 +369,7 @@ for subfolder_name in os.listdir(transcription_folder):
                 handle_composed_first_names(current_dict, xml_file_name)
 
                 # Restitution du lien entre prénom et nom de famille
-                link_first_name_last_name(current_dict, xml_file_name, output_list)
+                link_first_name_last_name(current_dict, xml_file_name, output_list, "Output1880.csv")
 
             except Exception as e:
                 try:
@@ -382,7 +381,12 @@ for subfolder_name in os.listdir(transcription_folder):
                     handle_composed_first_names(current_dict, xml_file_name)
 
                     # Restitution du lien entre prénom et nom de famille après traitement avec 4 clusters
-                    link_first_name_last_name(current_dict, xml_file_name, output_list)
+                    link_first_name_last_name(current_dict, xml_file_name, output_list,"Output1880.csv")
 
                 except Exception as e:
                     fichiers_avec_erreurs.append(xml_file_name)
+
+
+with open('1880OutputFilesError.txt', "w", newline='',encoding='utf-8') as csv_file:
+    for entry in fichiers_avec_erreurs:
+        csv_file.write(f"{entry}\n")
