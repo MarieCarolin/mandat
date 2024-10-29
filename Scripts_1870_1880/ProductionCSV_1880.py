@@ -201,7 +201,7 @@ def handle_composed_first_names(current_xml_dict, xml_file_name):
     current_xml_dict[xml_file_name]["First Name"] = Premiere_partie_triee
 
 # Fonction pour lier les prénoms aux noms de famille, en filtrant les termes d'affiliation
-def link_first_name_last_name(current_xml_dict, xml_file_name, output_list,outputcsvName):
+def link_first_name_last_name(current_xml_dict, xml_file_name, output_list):
     FirstName_str = current_xml_dict.get(xml_file_name).get("First Name")
     LastName_str = current_xml_dict.get(xml_file_name).get("Last Name")
     
@@ -239,7 +239,7 @@ def link_first_name_last_name(current_xml_dict, xml_file_name, output_list,outpu
     # Génération des fichiers .txt avec les résultats
     # generate_txt_output(xml_file_name, FirstName_LastName)
     # Génération d'un ficiher csv
-    generate_csv_output(output_list,outputcsvName )
+    generate_csv_output(output_list )
 
 # Fonction pour générer des fichiers .txt
 '''def generate_txt_output(xml_file_name, FirstName_LastName):
@@ -249,7 +249,7 @@ def link_first_name_last_name(current_xml_dict, xml_file_name, output_list,outpu
             f.write(f"XML File: {entry[0]}\nNom de famille: {entry[1]}\nPrénom: {entry[2]}\nVPOS (y): {entry[3]}\nHPOS (x): {entry[4]}\n\n")'''
 
 # Fonction pour générer le csv à partir de "output_list"
-def generate_csv_output(output, outputcsvName):
+def generate_csv_output(output):
     output_forCSV =[]
     for xml in output:
         for line in xml:
@@ -257,6 +257,11 @@ def generate_csv_output(output, outputcsvName):
 
     output_forCSV.sort(key=lambda x: (x[0], x[3]))
     header = ['File', 'Last Name', 'First', 'YPos', 'XPos']
+
+    with open("Output1880.csv", "w", newline='',encoding='utf-8') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(header)
+        csv_writer.writerows(output_forCSV)
 
 # Fonction pour traiter les fichiers en portrait et extraire le contenu avant la moitié verticale
 def process_portrait_files(xml_file_name, xml_file_path,num_clusters):
@@ -369,7 +374,7 @@ for subfolder_name in os.listdir(transcription_folder):
                 handle_composed_first_names(current_dict, xml_file_name)
 
                 # Restitution du lien entre prénom et nom de famille
-                link_first_name_last_name(current_dict, xml_file_name, output_list, "Output1880.csv")
+                link_first_name_last_name(current_dict, xml_file_name, output_list)
 
             except Exception as e:
                 try:
@@ -381,7 +386,7 @@ for subfolder_name in os.listdir(transcription_folder):
                     handle_composed_first_names(current_dict, xml_file_name)
 
                     # Restitution du lien entre prénom et nom de famille après traitement avec 4 clusters
-                    link_first_name_last_name(current_dict, xml_file_name, output_list,"Output1880.csv")
+                    link_first_name_last_name(current_dict, xml_file_name, output_list)
 
                 except Exception as e:
                     fichiers_avec_erreurs.append(xml_file_name)
